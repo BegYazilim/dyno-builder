@@ -111,7 +111,7 @@ class FormCreateCommand extends Command
 
         $componentPath = app_path("View/Components/{$directory}/{$className}.php");
         if (! File::exists($componentPath)) {
-            $this->info("Note: To create a component class, run: sail artisan theme:make-page {$formClassName} --page={$directory}");
+            $this->info("Note: To create a component class, run: sail artisan dyno-builder:create-element {$formClassName} --page={$directory}");
         }
 
         return 0;
