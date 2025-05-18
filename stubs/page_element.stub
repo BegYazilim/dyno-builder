@@ -1,0 +1,39 @@
+<?php
+
+namespace {{ namespace }};
+
+use BegYazilim\DynoBuilder\Front\Abstracts\AbstractBuilderElement;
+use BegYazilim\DynoBuilder\Enums\ElementTypeEnum;
+
+class {{ class }} extends AbstractBuilderElement
+{
+    public static string $key = '{{ key }}';
+
+    protected static bool $cacheRequired = false;
+
+    /**
+     * Get the element type.
+     */
+    public static function getElementType(): ElementTypeEnum
+    {
+        return ElementTypeEnum::{{ type }};
+    }
+
+    /**
+     * Prepare component data.
+     */
+    protected function componentData(): array
+    {
+        return [
+            // Component data here
+        ];
+    }
+
+    /**
+     * Render the component.
+     */
+    protected function renderComponent(): mixed
+    {
+        return view('{{ view }}', $this->componentData());
+    }
+}

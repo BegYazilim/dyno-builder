@@ -1,0 +1,33 @@
+<?php
+
+namespace {{ namespace }};
+
+use BegYazilim\DynoBuilder\Filament\Abstracts\AbstractBuilderForm;
+use Filament\Forms;
+
+class {{ class }} extends AbstractBuilderForm
+{
+    protected static string $sectionName = '{{ section_name }}';
+
+    protected static string $key = '{{ key }}';
+
+    protected static string $componentClass;
+
+    public static function getFormSchema(): array
+    {
+        return [
+            Forms\Components\Section::make(self::getSectionName())
+                ->description('{{ description }}')
+                ->schema([
+                    // Form elemanlarınızı buraya ekleyin
+                    Forms\Components\TextInput::make(self::generateInputName('title'))
+                        ->label('Başlık')
+                        ->required(),
+
+                    Forms\Components\Textarea::make(self::generateInputName('description'))
+                        ->label('Açıklama')
+                        ->rows(3),
+                ]),
+        ];
+    }
+}

@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Filament\Pages\Builder;
+
+use BegYazilim\DynoBuilder\Filament\Abstracts\AbstractPageBuilder;
+
+class {{ class }} extends AbstractPageBuilder
+{
+    protected static ?string $navigationLabel = '{{ navigation_label }}';
+    protected static ?string $title = '{{ page_title }}';
+
+    /**
+     * Define the builder elements used in this page
+     */
+    protected function getBuilderElements(): array
+    {
+        return [
+            // Page elements
+        ];
+    }
+
+    /**
+     * Custom success notification title
+     */
+    protected function getSuccessNotificationTitle(): string
+    {
+        return '{{ success_notification_title }}';
+    }
+}
