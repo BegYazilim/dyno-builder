@@ -37,10 +37,10 @@ class FormCreateCommand extends Command
             $name = $this->ask('What is the name of the form class?');
         }
 
-        // Name parametresinden dizin yapısını çıkar
+        // Extract directory structure from the name parameter
         $nameParts = explode('/', $name);
-        $formClassName = array_pop($nameParts); // Son elemanı sınıf adı olarak al
-        $directory = ! empty($nameParts) ? implode('/', $nameParts) : 'Home'; // Geri kalanı dizin yapısı olarak kullan, boşsa Home olsun
+        $formClassName = array_pop($nameParts); // Take the last element as the class name
+        $directory = ! empty($nameParts) ? implode('/', $nameParts) : 'Home'; // Use the rest as directory structure, default to Home if empty
 
         $sectionName = $this->option('section-name');
         if (empty($sectionName)) {
@@ -106,12 +106,12 @@ class FormCreateCommand extends Command
         // Write the file
         File::put($fullPath, $stub);
 
-        // Sadece form oluştur, component oluşturmayı önerme
+        // Only create the form, don't create a component
         $this->info("Form class {$className} created successfully at {$fullPath}");
 
         $componentPath = app_path("View/Components/{$directory}/{$className}.php");
         if (! File::exists($componentPath)) {
-            $this->info("Not: Component sınıfı oluşturmak için: sail artisan theme:make-page {$formClassName} --page={$directory}");
+            $this->info("Note: To create a component class, run: sail artisan theme:make-page {$formClassName} --page={$directory}");
         }
 
         return 0;

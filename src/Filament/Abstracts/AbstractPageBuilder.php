@@ -23,7 +23,7 @@ abstract class AbstractPageBuilder extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
 
-    protected static ?string $navigationGroup = 'Tema';
+    protected static ?string $navigationGroup = 'Theme';
 
     protected static ?int $navigationSort = 1;
 
@@ -41,7 +41,7 @@ abstract class AbstractPageBuilder extends Page implements HasForms
      */
     protected function getSuccessNotificationTitle(): string
     {
-        return 'Sayfa düzeni başarıyla kaydedildi';
+        return 'Page layout saved successfully';
     }
 
     /**
@@ -69,8 +69,8 @@ abstract class AbstractPageBuilder extends Page implements HasForms
             $data = $this->getPageData();
             $formattedData = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-            $schema[] = Section::make('Mevcut Veri')
-                ->description('Bu bölüm, mevcut sayfa yapılandırmasını göstermektedir.')
+            $schema[] = Section::make('Current Data')
+                ->description('This section shows the current page configuration.')
                 ->schema([
                     Placeholder::make('data_view')
                         ->content(new HtmlString(
@@ -167,7 +167,7 @@ abstract class AbstractPageBuilder extends Page implements HasForms
     {
         return [
             Action::make('save')
-                ->label('Kaydet')
+                ->label('Save')
                 ->action(function () {
                     $this->save();
                 }),
@@ -181,7 +181,7 @@ abstract class AbstractPageBuilder extends Page implements HasForms
     {
         return [
             Action::make('toggle_data_view')
-                ->label('Mevcut Veriyi Görüntüle')
+                ->label('View Current Data')
                 ->icon('heroicon-o-eye')
                 ->color('info')
                 ->visible($this->debug)

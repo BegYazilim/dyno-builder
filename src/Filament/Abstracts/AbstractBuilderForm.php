@@ -21,10 +21,10 @@ abstract class AbstractBuilderForm
     }
 
     /**
-     * Input isimlerini dinamik olarak oluşturur
+     * Dynamically generates input names
      *
-     * @param  string  $inputName  Input ismi
-     * @return string Input ismi (örn: "{key}.{inputName}")
+     * @param  string  $inputName  Input name
+     * @return string Input name (e.g.: "{key}.{inputName}")
      */
     public static function generateInputName(string $inputName): string
     {
@@ -32,12 +32,12 @@ abstract class AbstractBuilderForm
     }
 
     /**
-     * Her alt sınıfın kendi form şemasını tanımlaması için abstract metot
+     * Abstract method for each subclass to define its own form schema
      */
     abstract public static function getFormSchema(): array;
 
     /**
-     * Her alt sınıfın kendi element verisini tanımlaması için abstract metot
+     * Abstract method for each subclass to define its own element data
      */
     public static function getBuilderElementData(): array
     {

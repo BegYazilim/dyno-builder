@@ -41,7 +41,7 @@ abstract class AbstractBuilderElement extends Component
     abstract protected function renderComponent(): mixed;
 
     /**
-     * Component'i render eder
+     * Renders the component
      */
     public function render(): mixed
     {
@@ -138,13 +138,13 @@ abstract class AbstractBuilderElement extends Component
         // If cache is not available, fetch from database
         $data = ThemeElement::getElementData($elementKey, $page_id);
 
-        // Komponentler için created_at alanını ekle
+        // Add created_at field for components
         if ($data && ! isset($data['created_at']) && static::getElementType() === ElementTypeEnum::COMPONENT) {
             $data['created_at'] = now()->timestamp;
             $data['element_key'] = static::getElementKey();
         }
 
-        // Veri varsa önbelleğe al
+        // Cache the data if it exists
         if ($data) {
             Cache::put($cacheKey, $data, now()->addHours(static::$cacheDuration));
         }

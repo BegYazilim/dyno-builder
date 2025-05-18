@@ -20,10 +20,10 @@ class ThemeElement extends Model
     ];
 
     /**
-     * Belirli bir element_key ve page_id için eleman getirir
+     * Retrieves an element for a specific element_key and page_id
      *
-     * @param  string  $element_key  Element anahtarı
-     * @param  string|null  $page_id  Sayfa ID (opsiyonel)
+     * @param  string  $element_key  Element key
+     * @param  string|null  $page_id  Page ID (optional)
      */
     public static function getElement(string $element_key, ?string $page_id = null): ?ThemeElement
     {
@@ -37,11 +37,11 @@ class ThemeElement extends Model
     }
 
     /**
-     * Belirli bir element_key ve page_id için eleman verisini getirir
-     * Öncelikle dosya sisteminden okumaya çalışır, dosya yoksa veritabanından okur
+     * Retrieves element data for a specific element_key and page_id
+     * First tries to read from the file system, if the file doesn't exist, reads from the database
      *
-     * @param  string  $element_key  Element anahtarı
-     * @param  string|null  $page_id  Sayfa ID (opsiyonel)
+     * @param  string  $element_key  Element key
+     * @param  string|null  $page_id  Page ID (optional)
      */
     public static function getElementData(string $element_key, ?string $page_id = null): ?array
     {
@@ -51,7 +51,7 @@ class ThemeElement extends Model
             return null;
         }
 
-        // Eğer dosya yolu varsa ve dosya mevcutsa, öncelikle dosyadan oku
+        // If the file path exists and the file is available, read from the file first
         // @phpstan-ignore-next-line
         if ($element->file_path && Storage::exists($element->file_path)) {
             try {
@@ -62,25 +62,25 @@ class ThemeElement extends Model
                     return $fileData;
                 }
             } catch (\Exception $e) {
-                // Dosya okunamazsa veya geçersizse, hata kaydet (opsiyonel)
+                // If the file cannot be read or is invalid, log the error (optional)
                 // Log::error('Theme element file could not be read: ' . $e->getMessage());
             }
         }
 
-        // Dosya yoksa veya okunamazsa veritabanındaki veriyi kullan
+        // If the file doesn't exist or cannot be read, use the data from the database
         // @phpstan-ignore-next-line
         return $element->data;
     }
 
     /**
-     * Yeni bir element ekler veya günceller
-     * Veriyi önce veritabanına, sonra dosya sistemine yazar
+     * Adds or updates a new element
+     * Writes the data first to the database, then to the file system
      *
-     * @param  string  $element_key  Element anahtarı
-     * @param  string  $element_type  Element tipi (header, footer, sidebar vb.)
-     * @param  array|string  $data  Element verisi - array veya JSON string olabilir
-     * @param  string|null  $page_id  Sayfa ID (opsiyonel)
-     * @param  bool  $store_in_file  Veriyi dosyada sakla (büyük veriler için)
+     * @param  string  $element_key  Element key
+     * @param  string  $element_type  Element type (header, footer, sidebar etc.)
+     * @param  array|string  $data  Element data - can be an array or JSON string
+     * @param  string|null  $page_id  Page ID (optional)
+     * @param  bool  $store_in_file  Store data in file (for large data)
      */
     public static function saveElement(
         string $element_key,
@@ -89,37 +89,37 @@ class ThemeElement extends Model
         ?string $page_id = null,
         bool $store_in_file = false
     ): ThemeElement {
-        // Veri tipini kontrol et
+        // Check the data type
         if (is_string($data)) {
-            // Eğer JSON string ise, decode et
+            // If it's a JSON string, decode it
             try {
                 $decoded = json_decode($data, true);
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $arrayData = $decoded;
                 } else {
-                    // JSON değilse, direkt olarak kullan
+                    // If it's not JSON, use it directly
                     $arrayData = $data;
                 }
                 // @phpstan-ignore-next-line
             } catch (\Exception $e) {
-                // Hata durumunda direkt olarak kullan
+                // In case of error, use it directly
                 $arrayData = $data;
             }
         } else {
             $arrayData = $data;
         }
 
-        // Koşulları oluştur
+        // Create conditions
         $conditions = ['element_key' => $element_key];
 
         if ($page_id !== null) {
             $conditions['page_id'] = $page_id;
         }
 
-        // Mevcut elementi kontrol et
+        // Check for existing element
         $existingElement = self::where($conditions)->first();
 
-        // Eski dosyayı sil (eğer varsa)
+        // Delete old file (if it exists)
         // @phpstan-ignore-next-line
         if ($existingElement && $existingElement->file_path && Storage::exists($existingElement->file_path)) {
             Storage::delete($existingElement->file_path);
@@ -128,40 +128,40 @@ class ThemeElement extends Model
         $filePath = null;
         $dbData = $arrayData; // Varsayılan olarak tüm veriyi veritabanında sakla
 
-        // 1. Adım: Önce veritabanına kaydet
+        // Step 1: First save to database
         $element = self::updateOrCreate(
             $conditions,
             [
                 'element_type' => $element_type,
                 'data' => $dbData,
-                'file_path' => null, // Dosya yolunu başlangıçta null olarak ayarla
+                'file_path' => null, // Set file path to null initially
                 'page_id' => $page_id,
             ]
         );
 
-        // 2. Adım: Eğer dosyada saklanacaksa, dosyaya yaz
+        // Step 2: If it should be stored in a file, write to file
         if ($store_in_file) {
-            // Dizini oluştur
+            // Create directory
             $directory = 'theme_elements/'.$element_type;
             if (! Storage::exists($directory)) {
                 Storage::makeDirectory($directory);
             }
 
-            // Benzersiz dosya adı oluştur
+            // Create unique filename
             $fileNameBase = $page_id ?
                 md5($element_key.'_'.$page_id) :
                 md5($element_key);
 
             $filePath = $directory.'/'.$fileNameBase.'.json';
 
-            // Veriyi dosyaya yaz
+            // Write data to file
             Storage::put($filePath, json_encode($arrayData));
 
-            // Veritabanında dosya referansını güncelle
+            // Update file reference in database
             // @phpstan-ignore-next-line
             $element->file_path = $filePath;
             // @phpstan-ignore-next-line
-            $element->data = ['_stored_in_file' => true]; // Veritabanında sadece referans sakla
+            $element->data = ['_stored_in_file' => true]; // Only store reference in database
             $element->save();
         }
 
@@ -169,14 +169,14 @@ class ThemeElement extends Model
     }
 
     /**
-     * Belirli bir elementi siler
+     * Deletes a specific element
      *
-     * @param  string  $element_key  Element anahtarı
-     * @param  string|null  $page_id  Sayfa ID (opsiyonel)
+     * @param  string  $element_key  Element key
+     * @param  string|null  $page_id  Page ID (optional)
      */
     public static function deleteElement(string $element_key, ?string $page_id = null): bool
     {
-        // Sorguyu oluştur
+        // Create query
         $query = self::where('element_key', $element_key);
 
         if ($page_id !== null) {
@@ -190,13 +190,13 @@ class ThemeElement extends Model
         }
 
         foreach ($elements as $element) {
-            // Dosyayı sil (eğer varsa)
+            // Delete file (if it exists)
             // @phpstan-ignore-next-line
             if ($element->file_path && Storage::exists($element->file_path)) {
                 Storage::delete($element->file_path);
             }
 
-            // Veritabanı kaydını sil
+            // Delete database record
             $element->delete();
         }
 
@@ -204,10 +204,10 @@ class ThemeElement extends Model
     }
 
     /**
-     * Belirli bir element tipine sahip tüm elementleri getirir
+     * Retrieves all elements with a specific element type
      *
-     * @param  string  $element_type  Element tipi
-     * @param  string|null  $page_id  Sayfa ID (opsiyonel)
+     * @param  string  $element_type  Element type
+     * @param  string|null  $page_id  Page ID (optional)
      */
     public static function getElementsByType(string $element_type, ?string $page_id = null): \Illuminate\Database\Eloquent\Collection
     {
@@ -221,9 +221,9 @@ class ThemeElement extends Model
     }
 
     /**
-     * Belirli bir sayfa ID'sine sahip tüm elementleri getirir
+     * Retrieves all elements with a specific page ID
      *
-     * @param  string  $page_id  Sayfa ID
+     * @param  string  $page_id  Page ID
      */
     public static function getElementsByPageId(string $page_id): \Illuminate\Database\Eloquent\Collection
     {
